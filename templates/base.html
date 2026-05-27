@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}道路巡检数据分析与报告系统{% endblock %}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+:root { color-scheme: light; }
+body { background: #f5f6fa; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
+.sidebar { background: linear-gradient(135deg, #1a237e 0%, #283593 100%); min-height: 100vh; width: 240px;
+            position: fixed; top: 0; left: 0; color: #fff; z-index: 1000; }
+.sidebar .brand { padding: 20px; font-size: 16px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,.15);
+                  text-align: center; letter-spacing: 1px; }
+.sidebar .nav-link { color: rgba(255,255,255,.8); padding: 12px 20px; font-size: 14px;
+                      transition: all .2s; border-left: 3px solid transparent; }
+.sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: rgba(255,255,255,.1);
+                                                      border-left-color: #64b5f6; }
+.sidebar .nav-link i { margin-right: 8px; font-size: 16px; }
+.main-content { margin-left: 240px; padding: 24px; }
+.card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.08); margin-bottom: 20px; }
+.card-header { background: #fff; border-bottom: 1px solid #eee; font-weight: 600; font-size: 15px;
+               border-radius: 10px 10px 0 0 !important; padding: 14px 20px; }
+.stat-card { text-align: center; padding: 20px; }
+.stat-card .number { font-size: 32px; font-weight: 700; color: #1a237e; }
+.stat-card .label { font-size: 13px; color: #888; margin-top: 4px; }
+.flash-msg { margin-bottom: 16px; }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- 侧边栏 -->
+<nav class="sidebar">
+    <div class="brand">
+        <i class="bi bi-drone"></i> 道路巡检系统
+    </div>
+    <div class="nav flex-column mt-2">
+        <a class="nav-link {{ 'active' if request.path == '/' }}" href="/">
+            <i class="bi bi-speedometer2"></i> 仪表盘
+        </a>
+        <a class="nav-link {{ 'active' if request.path == '/import' }}" href="/import">
+            <i class="bi bi-cloud-upload"></i> 数据导入
+        </a>
+        <a class="nav-link {{ 'active' if '/inspections' in request.path }}" href="/inspections">
+            <i class="bi bi-list-check"></i> 巡检记录
+        </a>
+    </div>
+    <div style="position:absolute; bottom:20px; width:100%; text-align:center; font-size:11px; opacity:.5;">
+        桂林电子科技大学 © 2025
+    </div>
+</nav>
+
+<!-- 主内容 -->
+<div class="main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, msg in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show flash-msg" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

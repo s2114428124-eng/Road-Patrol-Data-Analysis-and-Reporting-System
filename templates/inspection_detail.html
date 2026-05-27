@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}{{ inspection.title }} - 巡检详情{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-card-text"></i> {{ inspection.title }}</h4>
+    <div>
+        <a href="/detect/{{ inspection.id }}" class="btn btn-warning">
+            <i class="bi bi-cpu"></i> 病害检测</a>
+        <a href="/analysis/{{ inspection.id }}" class="btn btn-info text-white">
+            <i class="bi bi-bar-chart"></i> 统计分析</a>
+        {% if has_gps %}
+        <a href="/map/{{ inspection.id }}" class="btn btn-success">
+            <i class="bi bi-geo-alt"></i> 地图视图</a>
+        {% endif %}
+        <a href="/report/{{ inspection.id }}" class="btn btn-primary" target="_blank">
+            <i class="bi bi-file-earmark-text"></i> 生成报告</a>
+    </div>
+</div>
+
+<!-- 基本信息 -->
+<div class="row mb-3">
+    <div class="col-md-3"><div class="card stat-card"><div class="number">{{ stats.overview.total_images }}</div><div class="label">图像总数</div></div></div>
+    <div class="col-md-3"><div class="card stat-card"><div class="number">{{ stats.overview.processed_images }}</div><div class="label">已检测</div></div></div>
+    <div class="col-md-3"><div class="card stat-card"><div class="number">{{ stats.overview.total_defects }}</div><div class="label">病害总数</div></div></div>
+    <div class="col-md-3"><div class="card stat-card"><div class="number">{{ stats.overview.defect_density }}</div><div class="label">病害密度(处/张)</div></div></div>
+</div>
+
+<div class="row">
+    <!-- 巡检信息 -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">巡检信息</div>
+            <div class="card-body" style="font-size:13px;">
+                <p><strong>日期：</strong>{{ inspection.inspection_date }}</p>
+                <p><strong>路段：</strong>{{ inspection.road_section or '未指定' }}</p>
+                <p><strong>巡检员：</strong>{{ inspection.inspector or '未指定' }}</p>
+                <p><strong>天气：</strong>{{ inspection.weather or '未记录' }}</p>
+                <p><strong>备注：</strong>{{ inspection.notes or '无' }}</p>
+                <p class="text-muted small">创建于 {{ inspection.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图像列表 -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                巡检图像 ({{ images|length }})
+                <span class="text-muted small">
+                    <span class="text-success">🟢 已检测</span>
+                    <span class="text-secondary ms-2">⚪ 未检测</span>
+                </span>
+            </div>
+            <div class="card-body">
+                {% if images %}
+                <div class="row">
+                {% for img in images %}
+                <div class="col-md-3 col-sm-4 mb-3">
+                    <div class="border rounded p-1 text-center" style="position:relative;">
+                        <img src="/uploads/{{ img.filepath.split('/')[-1] }}"
+                             style="width:100%; height:100px; object-fit:cover; border-radius:3px;"
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23eee%22 width=%22100%22 height=%22100%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2212%22>无图像</text></svg>'">
+                        <div class="small text-truncate mt-1">{{ img.filename }}</div>
+                        {% if img.is_processed %}
+                        <span class="badge bg-success position-absolute top-0 end-0 m-1">✓</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-3 text-muted">暂无图像</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 病害列表 -->
+{% if stats.defect_list %}
+<div class="card mt-3">
+    <div class="card-header">检测到的病害 ({{ stats.defect_list|length }})</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0" style="font-size:13px;">
+            <thead class="table-light">
+                <tr><th>类型</th><th>严重程度</th><th>置信度</th><th>来源图像</th><th>GPS</th></tr>
+            </thead>
+            <tbody>
+            {% for d in stats.defect_list[:20] %}
+            <tr>
+                <td>{{ d.type }}</td>
+                <td>
+                    {% if d.severity == 1 %}<span class="badge bg-success">轻微</span>
+                    {% elif d.severity == 2 %}<span class="badge bg-warning text-dark">中等</span>
+                    {% else %}<span class="badge bg-danger">严重</span>{% endif %}
+                </td>
+                <td>{{ (d.confidence * 100) | round(1) if d.confidence else '-' }}%</td>
+                <td class="text-truncate" style="max-width:150px;">{{ d.image_name }}</td>
+                <td class="small">{{ d.gps }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

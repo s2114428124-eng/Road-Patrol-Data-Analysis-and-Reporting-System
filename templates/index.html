@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}仪表盘 - 道路巡检系统{% endblock %}
+{% block content %}
+
+<h4 class="mb-3"><i class="bi bi-speedometer2"></i> 系统仪表盘</h4>
+
+<!-- 统计卡片 -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="number">{{ total_inspections }}</div>
+            <div class="label">巡检任务总数</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="number">{{ total_images }}</div>
+            <div class="label">采集图像总数</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="number">{{ total_defects }}</div>
+            <div class="label">检测病害总数</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="number">{{ avg_defects }}</div>
+            <div class="label">平均每任务病害数</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 最近巡检 -->
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                最近巡检记录
+                <a href="/import" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新建巡检</a>
+            </div>
+            <div class="card-body p-0">
+                {% if inspections %}
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>任务名称</th><th>路段</th><th>日期</th><th>图像</th><th>病害</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    {% for insp in inspections %}
+                    <tr>
+                        <td><strong>{{ insp.title }}</strong></td>
+                        <td>{{ insp.road_section or '-' }}</td>
+                        <td>{{ insp.inspection_date }}</td>
+                        <td>{{ insp.total_images }}</td>
+                        <td><span class="badge bg-warning text-dark">{{ insp.total_defects }}</span></td>
+                        <td><a href="/inspection/{{ insp.id }}" class="btn btn-outline-primary btn-sm">详情</a></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox" style="font-size:48px;"></i>
+                    <p class="mt-2">暂无巡检记录，请先导入数据</p>
+                    <a href="/import" class="btn btn-primary">开始导入</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 病害类型统计 -->
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">病害类型分布</div>
+            <div class="card-body">
+                {% if defect_summary %}
+                <canvas id="defectChart" height="220"></canvas>
+                {% else %}
+                <div class="text-center py-4 text-muted">暂无数据</div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- 最近趋势 -->
+        <div class="card">
+            <div class="card-header">七日巡检趋势</div>
+            <div class="card-body">
+                <canvas id="trendChart" height="160"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+<script>
+// 病害类型饼图
+{% if defect_summary %}
+new Chart(document.getElementById('defectChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ defect_summary.keys() | list | tojson }},
+        datasets: [{
+            data: {{ defect_summary.values() | list | tojson }},
+            backgroundColor: ['#1a237e','#283593','#3949ab','#5c6bc0','#7986cb','#9fa8da'],
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+    }
+});
+{% endif %}
+
+// 七日趋势
+new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ recent_stats | map(attribute='date') | list | tojson }},
+        datasets: [{
+            label: '检测病害数',
+            data: {{ recent_stats | map(attribute='defects') | list | tojson }},
+            backgroundColor: '#3949ab',
+            borderRadius: 4,
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+        plugins: { legend: { display: false } }
+    }
+});
+</script>
+{% endblock %}

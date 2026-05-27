@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}数据导入 - 道路巡检系统{% endblock %}
+{% block content %}
+
+<h4 class="mb-3"><i class="bi bi-cloud-upload"></i> 导入巡检数据</h4>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">新建巡检任务并导入数据</div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <!-- 基本信息 -->
+                    <h6 class="text-primary mb-3">巡检基本信息</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">任务名称 <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" required
+                                   placeholder="例如：桂林-阳朔旅游公路2025年3月巡检">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">巡检日期 <span class="text-danger">*</span></label>
+                            <input type="date" name="inspection_date" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">巡检路段</label>
+                            <input type="text" name="road_section" class="form-control"
+                                   placeholder="例如：G321国道K123-K145">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">巡检员</label>
+                            <input type="text" name="inspector" class="form-control" placeholder="姓名">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">天气</label>
+                            <select name="weather" class="form-select">
+                                <option value="">选择天气</option>
+                                <option>晴</option><option>多云</option><option>阴</option><option>小雨</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">备注</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="其他说明信息..."></textarea>
+                    </div>
+
+                    <hr>
+                    <!-- 图像上传 -->
+                    <h6 class="text-primary mb-3">巡检图像 <small class="text-muted">（支持批量选择，jpg/png/bmp）</small></h6>
+                    <div class="mb-3">
+                        <input type="file" name="images" class="form-control" multiple accept=".jpg,.jpeg,.png,.bmp">
+                        <div class="form-text">可一次性选择多张道路巡检图像</div>
+                    </div>
+
+                    <!-- GPS数据 -->
+                    <h6 class="text-primary mb-3">GPS轨迹数据 <small class="text-muted">（可选，CSV格式）</small></h6>
+                    <div class="mb-3">
+                        <input type="file" name="gps_file" class="form-control" accept=".csv">
+                        <div class="form-text">CSV需包含列: lat/latitude, lng/longitude/lon (可选: alt, speed, timestamp)</div>
+                    </div>
+
+                    <hr>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-cloud-upload"></i> 导入数据
+                    </button>
+                    <a href="/" class="btn btn-outline-secondary btn-lg ms-2">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-info-circle"></i> 导入说明</div>
+            <div class="card-body" style="font-size:13px;">
+                <p><strong>图像要求：</strong></p>
+                <ul>
+                    <li>支持 JPG / PNG / BMP 格式</li>
+                    <li>建议分辨率 ≥ 1920×1080</li>
+                    <li>单文件 ≤ 20MB</li>
+                    <li>建议包含GPS元数据（EXIF）</li>
+                </ul>
+                <p><strong>GPS CSV格式示例：</strong></p>
+                <pre style="background:#f5f5f5; padding:8px; border-radius:4px; font-size:11px;">lat,lng,alt,speed,timestamp
+25.2744,110.2901,150,36,2025-03-15T09:00:00
+25.2750,110.2915,152,38,2025-03-15T09:00:05</pre>
+                <p class="text-muted mb-0">导入后可在"病害检测"页面执行AI分析。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
